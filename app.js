@@ -24,29 +24,36 @@ const planOutput = document.querySelector('#plan-output');
 const updatePlan = () => {
   const days = Number(range.value);
   const plan = days <= 3 ? 'Day Pass' : days <= 10 ? 'Flex' : 'Fijo';
-  daysOutput.textContent = `${days} ${days === 1 ? 'día' : 'días'}`;
-  planOutput.textContent = `Te recomendamos ${plan}`;
+  const units = { ca: days === 1 ? 'dia' : 'dies', es: days === 1 ? 'día' : 'días', en: days === 1 ? 'day' : 'days' };
+  const recommendations = { ca: 'Et recomanem', es: 'Te recomendamos', en: 'We recommend' };
+  daysOutput.textContent = `${days} ${units[window.calferLocale]}`;
+  planOutput.textContent = `${recommendations[window.calferLocale]} ${window.calferT(plan)}`;
 };
 range.addEventListener('input', updatePlan);
 updatePlan();
 
 document.querySelectorAll('[data-plan]').forEach((link) => {
   link.addEventListener('click', () => {
-    document.querySelector('#plan-select').value = link.dataset.plan;
+    document.querySelector('#plan-select').value = window.calferT(link.dataset.plan);
   });
 });
 
 document.querySelector('#contact-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
+  const greetings = { ca: `Hola, soc ${data.get('name')}.`, es: `Hola, soy ${data.get('name')}.`, en: `Hello, I am ${data.get('name')}.` };
+  const interest = { ca: 'M’interessa', es: 'Me interesa', en: 'I am interested in' };
+  const phone = { ca: 'Telèfon', es: 'Teléfono', en: 'Phone' };
+  const fallback = { ca: 'Voldria visitar l’espai i rebre més informació.', es: 'Quisiera visitar el espacio y recibir más información.', en: 'I would like to tour the space and receive more information.' };
   const subject = encodeURIComponent(`Visita Calfer Workspace · ${data.get('plan')}`);
-  const body = encodeURIComponent(`Hola, soy ${data.get('name')}.
+  const body = encodeURIComponent(`${greetings[window.calferLocale]}
 
-Me interesa: ${data.get('plan')}
-Teléfono: ${data.get('phone')}
+${interest[window.calferLocale]}: ${data.get('plan')}
+${phone[window.calferLocale]}: ${data.get('phone')}
 Email: ${data.get('email')}
 
-${data.get('message') || 'Quisiera visitar el espacio y recibir más información.'}`);
-  document.querySelector('#form-status').textContent = 'Abriendo tu aplicación de correo…';
+${data.get('message') || fallback[window.calferLocale]}`);
+  const opening = { ca: 'Obrint la teva aplicació de correu…', es: 'Abriendo tu aplicación de correo…', en: 'Opening your email app…' };
+  document.querySelector('#form-status').textContent = opening[window.calferLocale];
   window.location.href = `mailto:workspace@calfergrup.com?subject=${subject}&body=${body}`;
 });
